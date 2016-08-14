@@ -1,6 +1,6 @@
 {
   "name": "node-gopher",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A Gopher server, written in node",
   "main": "index.js",
   "scripts": {

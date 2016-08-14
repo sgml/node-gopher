@@ -1,14 +1,27 @@
-trapdoor-hinge
-==============
-[![npm](https://img.shields.io/npm/v/trapdoor-hinge.svg?maxAge=2592000)](https://www.npmjs.com/package/trapdoor-hinge)
-[![Travis branch](https://img.shields.io/travis/CalmBit/trapdoor-hinge/master.svg?maxAge=2592000)](https://travis-ci.org/CalmBit/trapdoor-hinge)
+node-gopher
+==================
 
-A node-based API for Minecraft servers, based on Bukkit
+A Gopher server, written in node.
 
-Fits together nicely with [trapdoor](http://github.com/CalmBit/trapdoor.git), trapdoor-hinge's sister project!
+<hr>
 
-TODO:
--------------
-- [ ] Plugin API
-- [ ] NBT Tags
-- [ ] More things
+Currently handles:
+
+* Directories
+* Text files
+* Wav/MP3 Files
+* Binary files
+* GIF files
+
+Future Additions:
+
+* gophermap
+* Support for search-indexing
+
+<hr>
+
+*WARNING*: THIS IS ENTIRELY A WORK IN PROGRESS - PLEASE, DO NOT USE THIS IN ANYTHING CRITICAL!
+
+Not that you would...it's Gopher, after all...
+
+<hr>
