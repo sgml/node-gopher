@@ -98,4 +98,4 @@ function createServer()
     });
 }
 
-createServer();
+module.exports = createServer;
