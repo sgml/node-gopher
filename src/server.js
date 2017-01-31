@@ -65,21 +65,21 @@ function dataHandler(buff)
 
 function fileReader(conn, path)
 {
+    var data = null;
     switch(pathMod.extname(path))
     {
         case ".txt":
         {
-            var data = fs.readFileSync(path,{encoding: "utf-8"});
-            conn.write(data);
+            data = fs.readFileSync(path,{encoding: "utf-8"});
             break;
         }
         default:
         {
-            var data = fs.readFileSync(path);
-            conn.write(data);
+            data = fs.readFileSync(path);
             break;
         }
     }
+    conn.write(data);
 }
 
 function directoryReader(conn, path)
@@ -95,7 +95,7 @@ function directoryReader(conn, path)
         }
         else if(fStat.isFile())
         {
-            var fileType = fileType()
+            var fileType = fileType();
             conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t70\n\r");
         }
     }

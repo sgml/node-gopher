@@ -1,4 +1,4 @@
-var config = {}
+var config = {};
 
 // Configures the bound host for the Gopher server
 // *CURRENTLY NOT FUNCTIONING*
@@ -15,7 +15,7 @@ config.root = "doc";
 
 function getConfig(opt, def)
 {
-    return config[opt] == null ? def : config[opt];
+    return config[opt] === null ? def : config[opt];
 }
 
 module.exports = getConfig;
