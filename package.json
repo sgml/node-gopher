@@ -23,8 +23,10 @@
   },
   "homepage": "https://github.com/CalmBit/node-gopher",
   "dependencies": {
+    "log4js": "^0.6.38"
+  },
+  "devDependencies": {
     "chai": "^3.5.0",
-    "log4js": "^0.6.38",
     "mocha": "^2.5.3"
   }
 }
