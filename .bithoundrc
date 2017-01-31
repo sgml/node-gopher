@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+    "unused-ignores": [
+      "log4js"
+    ]
+  }
+}
