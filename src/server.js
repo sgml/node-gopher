@@ -9,32 +9,29 @@ var logger = log4js.getLogger();
 function createServer()
 {
     var server = net.createServer(function(conn) {
-        logger.info("Client has connected");
+        logger.debug("Client has connected");
         conn.on("end", function() {
-            logger.info("Client disconnected");
+            logger.debug("Client disconnected");
         });
-        conn.on("data", dataHandler);
+        conn.on("data", function(buff) {
+            dataHandler(buff, conn);
+        });
     });
 
-    server.listen(getConfig("port", 70), function() {
+    var port = getConfig("port", 70);
+
+    server.listen(port, function() {
         logger.info("Server bound");
     });
 }
 
-function dataHandler(buff)
+function dataHandler(buff, conn)
 {
     var selector = buff.toString("utf-8",0,buff.byteLength-2);
     var fileExists = true;
     try
     {
-        var motd = fs.readFileSync(getConfig("motd","motd.txt"),{encoding: "utf-8"}).split("\n");
-        if(selector === "")
-        {
-            for(var m = 0;m < motd.length;m++)
-            {
-                conn.write("i"+motd[m]+"\tlocalhost\t70\n\r");
-            }
-        }
+        messageOfTheDay(conn, selector);
         fs.accessSync(getConfig("root","doc"));
     }
     catch(err)
@@ -53,7 +50,7 @@ function dataHandler(buff)
 
         if(selStat.isDirectory())
         {
-            directoryReader(conn, path);
+            directoryReader(conn, path, selector);
         }
         if(selStat.isFile())
         {
@@ -68,11 +65,13 @@ function fileReader(conn, path)
     var data = null;
     switch(pathMod.extname(path))
     {
+        // If a file has the ending .txt, we wanna read it as a utf-8 file.
         case ".txt":
         {
             data = fs.readFileSync(path,{encoding: "utf-8"});
             break;
         }
+        // Otherwise, it's probably a bianry blob, so just transmit it raw.
         default:
         {
             data = fs.readFileSync(path);
@@ -82,7 +81,7 @@ function fileReader(conn, path)
     conn.write(data);
 }
 
-function directoryReader(conn, path)
+function directoryReader(conn, path, selector)
 {
     var files = fs.readdirSync(path);
     for(var i = 0;i < files.length;i++)
@@ -95,14 +94,14 @@ function directoryReader(conn, path)
         }
         else if(fStat.isFile())
         {
-            var fileType = fileType();
+            var fileType = fileTypeSelector(fileName);
             conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t70\n\r");
         }
     }
     conn.write(".");
 }
 
-function fileType(fileName)
+function fileTypeSelector(fileName)
 {
     var ft = "9";
     switch(pathMod.extname(fileName))
@@ -133,6 +132,18 @@ function error(conn, err)
     }
     conn.write(".");
     conn.end();
+}
+
+function messageOfTheDay(conn, selector)
+{
+    var motd = fs.readFileSync(getConfig("motd","motd.txt"),{encoding: "utf-8"}).split("\n");
+    if(selector === "")
+    {
+        for(var m = 0;m < motd.length;m++)
+        {
+            conn.write("i"+motd[m]+"\tlocalhost\t70\n\r");
+        }
+    }
 }
 
 module.exports = createServer;
