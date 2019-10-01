@@ -6,6 +6,11 @@ var getConfig = require("../config.js");
 
 var logger = log4js.getLogger();
 
+// moved 'port' out of createServer() to make 
+// available to server's conn.write() actions
+var port = getConfig("port", 70);
+
+
 function createServer()
 {
     var server = net.createServer(function(conn) {
@@ -17,8 +22,6 @@ function createServer()
             dataHandler(buff, conn);
         });
     });
-
-    var port = getConfig("port", 70);
 
     server.listen(port, function() {
         logger.info("Server bound");
@@ -90,12 +93,12 @@ function directoryReader(conn, path, selector)
         var fStat = fs.lstatSync(path + fileName);
         if(fStat.isDirectory())
         {
-            conn.write("1"+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t70\n\r");
+            conn.write("1"+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\n\r");
         }
         else if(fStat.isFile())
         {
             var fileType = fileTypeSelector(fileName);
-            conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t70\n\r");
+            conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\n\r");
         }
     }
     conn.write(".");
@@ -128,7 +131,7 @@ function error(conn, err)
     var stack = err.stack.split("\n");
     for(var e = 0;e < stack.length;e++)
     {
-        conn.write("3" + stack[e] + "\tlocalhost\70\n\r");
+        conn.write("3" + stack[e] + "\tlocalhost\t"+port+"\n\r");
     }
     conn.write(".");
     conn.end();
@@ -141,7 +144,7 @@ function messageOfTheDay(conn, selector)
     {
         for(var m = 0;m < motd.length;m++)
         {
-            conn.write("i"+motd[m]+"\tlocalhost\t70\n\r");
+            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\n\r");
         }
     }
 }
