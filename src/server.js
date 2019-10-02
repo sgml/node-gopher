@@ -28,6 +28,7 @@ function createServer()
     });
 }
 
+
 function dataHandler(buff, conn)
 {
     var selector = buff.toString("utf-8",0,buff.byteLength-2);
@@ -74,7 +75,7 @@ function fileReader(conn, path)
             data = fs.readFileSync(path,{encoding: "utf-8"});
             break;
         }
-        // Otherwise, it's probably a bianry blob, so just transmit it raw.
+        // Otherwise, it's probably a binary blob, so just transmit it raw.
         default:
         {
             data = fs.readFileSync(path);
@@ -84,6 +85,8 @@ function fileReader(conn, path)
     conn.write(data);
 }
 
+// TODO:  Add code to exclude motd and 
+// gophermap files from listing
 function directoryReader(conn, path, selector)
 {
     var files = fs.readdirSync(path);
@@ -93,17 +96,19 @@ function directoryReader(conn, path, selector)
         var fStat = fs.lstatSync(path + fileName);
         if(fStat.isDirectory())
         {
-            conn.write("1"+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\n\r");
+            conn.write("1"+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\r\n");
         }
         else if(fStat.isFile())
         {
             var fileType = fileTypeSelector(fileName);
-            conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\n\r");
+            conn.write(fileType+fileName.substr(1)+"\t"+selector+fileName+"\tlocalhost\t"+port+"\r\n");
         }
     }
     conn.write(".");
 }
 
+// TODO: determine filetype by means other than
+// matching extension.
 function fileTypeSelector(fileName)
 {
     var ft = "9";
@@ -131,7 +136,7 @@ function error(conn, err)
     var stack = err.stack.split("\n");
     for(var e = 0;e < stack.length;e++)
     {
-        conn.write("3" + stack[e] + "\tlocalhost\t"+port+"\n\r");
+        conn.write("3" + stack[e] + "\tlocalhost\t"+port+"\r\n");
     }
     conn.write(".");
     conn.end();
@@ -140,11 +145,21 @@ function error(conn, err)
 function messageOfTheDay(conn, selector)
 {
     var motd = fs.readFileSync(getConfig("motd","motd.txt"),{encoding: "utf-8"}).split("\n");
-    if(selector === "")
+    if(selector === "" || selector === "/")
     {
         for(var m = 0;m < motd.length;m++)
         {
-            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\n\r");
+            // The repeated conn.write() is a weird kludge. 
+            // As I understand it, each conn.write() 
+            // should send the same content, but it doesn't!
+            // The first conn.write() sends the even numbered line
+            // while the second sends the odd numbered one.
+            // Without it, we only see every other line of motd
+            // Something must be incrementing the loop counter
+            // between conn.write() invocations
+            // -- blubrick (blubrick@gmail.com) (02 Oct,2019 )
+            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\r\n");
+            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\r\n");
         }
     }
 }
