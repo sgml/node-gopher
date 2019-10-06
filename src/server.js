@@ -32,6 +32,9 @@ function createServer()
 function dataHandler(buff, conn)
 {
     var selector = buff.toString("utf-8",0,buff.byteLength-2);
+    // Both "" and "/" requests from clients are treated
+    //  as "", else file paths are preceded by "//"
+    if (selector === "/") selector = "";  
     var fileExists = true;
     try
     {
@@ -145,21 +148,15 @@ function error(conn, err)
 function messageOfTheDay(conn, selector)
 {
     var motd = fs.readFileSync(getConfig("motd","motd.txt"),{encoding: "utf-8"}).split("\n");
-    if(selector === "" || selector === "/")
+
+    if(selector === "")
     {
         for(var m = 0;m < motd.length;m++)
         {
-            // The repeated conn.write() is a weird kludge. 
-            // As I understand it, each conn.write() 
-            // should send the same content, but it doesn't!
-            // The first conn.write() sends the even numbered line
-            // while the second sends the odd numbered one.
-            // Without it, we only see every other line of motd
-            // Something must be incrementing the loop counter
-            // between conn.write() invocations
-            // -- blubrick (blubrick@gmail.com) (02 Oct,2019 )
-            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\r\n");
-            conn.write("i"+motd[m]+"\tlocalhost\t"+port+"\r\n");
+            // Invalid directory entities may be ignored by
+            // some clients. The three tab characters make 
+            // this a valid, if null, directory entity.
+            conn.write("i"+motd[m]+"\t\t\t\r\n");
         }
     }
 }
